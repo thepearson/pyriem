@@ -1,0 +1,64 @@
+---
+# file: stats config
+
+default:
+  host: riemann.example.com
+  frequency: 10
+
+enabled plugins:
+  load:
+    - one_minute
+    - five_minute
+    - fifteen_minute
+  memory:
+    - virtual_memory
+    - swap_memory
+  disk:
+    - disk_usage
+
+  network:
+    - network_io
+
+# Load settings
+load:
+  one_minute:
+    frequency: 5
+    ttl: 120
+    warn: 2.0
+    crit: 4.0
+  five_minute:
+    frequency: 10
+    ttl: 120
+    warn: 1.0
+    crit: 2.0
+  fifteen_minute:
+    frequency: 20
+    ttl: 120
+    warn: 0.8
+    crit: 1.2
+
+memory:
+  virtual_memory:
+    frequency: 10
+    ttl: 120
+    warn: 0.95
+    crit: 0.98
+  swap_memory:
+    frequency: 10
+    ttl: 120
+    warn: 0.15
+    crit: 0.25
+
+disk:
+  disk_usage:
+    frequency: 10
+    ttl: 120
+    warn: 0.7
+    crit: 0.85
+
+network:
+  network_io:
+    frequency: 5
+    ttl: 120
+    warn: 4194000
+    crit: 8388000
