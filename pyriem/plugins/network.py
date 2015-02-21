@@ -65,26 +65,34 @@ def network_io(settings=None):
     if bytes_out_per_second >= settings['crit']:
       out_state = 'critical'
 
-    device_info.append({
+    data_in = {
       'host': os.uname()[1],
       'service': 'network_inbound_{device}'.format(device=nic),
       'metric': bytes_in_per_second,
       'state': in_state,
       'time': int(time.time()),
       'tags': [__name__],
-      'ttl': settings['ttl']
-      #'description': 'Disk status is "{state}". Total size is {total} and disk has {free} free.'.format(state=state, total=space.total, free=space.free)
-    })
+      'description': 'Incoming network traffic on {device}'.format(device=nic)
+    }
 
-    device_info.append({
+    if 'ttl' in settings:
+      data_in['ttl'] = settings['ttl']
+
+    device_info.append(data_in)
+
+    data_out = {
       'host': os.uname()[1],
       'service': 'network_outboud_{device}'.format(device=nic),
       'metric': bytes_out_per_second,
       'state': out_state,
       'time': int(time.time()),
       'tags': [__name__],
-      'ttl': settings['ttl']
-      #'description': 'Disk status is "{state}". Total size is {total} and disk has {free} free.'.format(state=state, total=space.total, free=space.free)
-    })
+      'description': 'Outgoing network traffic on {device}'.format(device=nic)
+    }
+
+    if 'ttl' in settings:
+      data_in['ttl'] = settings['ttl']
+
+    device_info.append(data_out)
 
   return device_info

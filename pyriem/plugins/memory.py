@@ -17,13 +17,11 @@ except ImportError:
 default_settings = {
   'virtual_memory': {
     'frequency': 10,
-    'ttl': 20,
     'warn': 0.95,
     'crit': 0.98
   },
   'swap_memory': {
     'frequency': 10,
-    'ttl': 20,
     'warn': 0.15,
     'crit': 0.25
   }
@@ -54,9 +52,12 @@ def virtual_memory(settings=None):
       'state': state,
       'time': int(time.time()),
       'tags': [__name__],
-      'ttl': settings['ttl'],
       'description': 'Virtual memory metric "{metric}" which is in "{state}" state'.format(metric=type, state=state)
     }
+
+    if 'ttl' in settings:
+      data['ttl'] = settings['ttl']
+
     return_data.append(data)
 
   return return_data
@@ -88,9 +89,12 @@ def swap_memory(settings=None):
       'state': state,
       'time': int(time.time()),
       'tags': [__name__],
-      'ttl': settings['ttl'],
       'description': 'Swap memory metric "{metric}" which is in "{state}" state'.format(metric=type, state=state)
     }
+
+    if 'ttl' in settings:
+      data['ttl'] = settings['ttl']
+
     return_data.append(data)
 
   return return_data

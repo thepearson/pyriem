@@ -17,7 +17,6 @@ except ImportError:
 default_settings = {
   'disk_usage': {
     'frequency': 3600,
-    'ttl': 7200,
     'warn': 0.8,
     'crit': 0.9
   }
@@ -52,9 +51,11 @@ def disk_usage(settings=None):
       'state': state,
       'time': int(time.time()),
       'tags': [__name__],
-      'ttl': settings['ttl'],
       'description': 'Disk status is "{state}". Total size is {total} and disk has {free} free.'.format(state=state, total=space.total, free=space.free)
     }
+
+    if 'ttl' in settings:
+      data['ttl'] = settings['ttl']
 
     disk_info.append(data)
 

@@ -25,19 +25,16 @@ Format is [warning, critical] - this can be overridden in the config file with t
 default_settings = {
   'one_minute': {
     'frequency': 5,
-    'ttl': 10,
     'warn': 2.0,
     'crit': 4.0
   },
   'five_minute': {
     'frequency': 10,
-    'ttl': 20,
     'warn': 1.0,
     'crit': 2.0
   },
   'fifteen_minute': {
     'frequency': 15,
-    'ttl': 20,
     'warn': 0.8,
     'crit': 1.2
   }
@@ -74,9 +71,12 @@ def one_minute(settings=None):
     'state': state,
     'time': int(time.time()),
     'tags': [__name__],
-    'ttl': settings['ttl'],
     'description': 'One minute load average in "{state}" state'.format(state=state)
   }
+
+  if 'ttl' in settings:
+    data['ttl'] = settings['ttl']
+
   return data
 
 
@@ -104,9 +104,12 @@ def five_minute(settings=None):
     'state': state,
     'time': int(time.time()),
     'tags': [__name__],
-    'ttl': settings['ttl'],
     'description': 'Five minute load average in "{state}" state'.format(state=state)
   }
+
+  if 'ttl' in settings:
+    data['ttl'] = settings['ttl']
+
   return data
 
 
@@ -134,7 +137,10 @@ def fifteen_minute(settings=None):
     'state': state,
     'time': int(time.time()),
     'tags': [__name__],
-    'ttl': settings['ttl'],
     'description': 'Fifteen minute load average in "{state}" state'.format(state=state)
   }
+
+  if 'ttl' in settings:
+    data['ttl'] = settings['ttl']
+
   return data
