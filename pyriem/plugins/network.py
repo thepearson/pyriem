@@ -17,7 +17,6 @@ except ImportError:
 default_settings = {
   'network_io': {
     'frequency': 5,
-    'ttl': 120,
     'warn': 4194304,
     'crit': 8388608
   }
@@ -82,7 +81,7 @@ def network_io(settings=None):
 
     data_out = {
       'host': os.uname()[1],
-      'service': 'network_outboud_{device}'.format(device=nic),
+      'service': 'network_outbound_{device}'.format(device=nic),
       'metric': bytes_out_per_second,
       'state': out_state,
       'time': int(time.time()),
@@ -91,7 +90,7 @@ def network_io(settings=None):
     }
 
     if 'ttl' in settings:
-      data_in['ttl'] = settings['ttl']
+      data_out['ttl'] = settings['ttl']
 
     device_info.append(data_out)
 

@@ -5,7 +5,7 @@ import bernhard
 import argparse
 
 __PROJECT__ = 'pyriem'
-__VERSION__ = "0.1.9"
+__VERSION__ = "0.1.11"
 
 c = None
 
@@ -43,7 +43,10 @@ def execute(module, method, config, settings=None):
 def send(config, module, method, data):
   global c
   if not c:
-    c = bernhard.Client(host=config['default']['host'])
+    if config['default']['transport'] == 'udp':
+      c = bernhard.Client(host=config['default']['host'], transport=bernhard.UDPTransport)
+    else:
+      c = bernhard.Client(host=config['default']['host'])
 
   if type(data) is list:
     for item in data:
