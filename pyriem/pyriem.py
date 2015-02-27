@@ -3,14 +3,16 @@ import multiprocessing
 import yaml
 import bernhard
 import argparse
+import psutil
 import signal
 import sys
+import os
 
 __PROJECT__ = 'pyriem'
-__VERSION__ = "0.1.12"
+__VERSION__ = "0.1.16"
 
 c = None
-running_procs = []
+
 
 class TimedProcess(multiprocessing.Process):
   def __init__(self, interval, module, method, config, settings=None):
@@ -43,9 +45,7 @@ def collect(config):
         method_frequency = default_freq
 
       timed_process = TimedProcess(method_frequency, module, method, config, config['{plugin}'.format(plugin=plugin)]['{method}'.format(method=method)])
-      running_procs.append(timed_process)
       timed_process.start()
-
 
 
 #
@@ -69,13 +69,19 @@ def send(config, module, method, data):
   q = c.query('true')
 
 
-def clean_up():
-  global running_procs
-  print('Shutting down all processes')
-  for proc in running_procs:
-    proc.terminate()
+def kill_proc_tree(pid, including_parent=True):
+  parent = psutil.Process(pid)
+  print parent.children()
+  for child in parent.children(recursive=True):
+    child.kill()
+  if including_parent:
+    parent.kill()
 
-  sys.exit(0)
+
+def kill_handler(signum, frame):
+    print 'Signal handler called with signal', signum, frame
+    kill_proc_tree(os.getpid())
+    sys.exit()
 
 
 def main():
@@ -87,9 +93,13 @@ def main():
 
   config = yaml.load(file(config_file, 'r'))
 
+  signal.signal(signal.SIGINT, kill_handler)
+  signal.signal(signal.SIGTERM, kill_handler)
+  signal.signal(signal.SIGHUP, kill_handler)
+
   try:
     collect(config)
   except (KeyboardInterrupt, SystemExit):
-    clean_up()
+    kill_proc_tree(os.getpid())
     sys.exit()
 
