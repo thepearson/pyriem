@@ -9,7 +9,7 @@ import sys
 import os
 
 __PROJECT__ = 'pyriem'
-__VERSION__ = "0.1.16"
+__VERSION__ = "0.1.17"
 
 c = None
 
@@ -66,7 +66,6 @@ def send(config, module, method, data):
       c.send(item)
   else:
     c.send(data)
-  q = c.query('true')
 
 
 def kill_proc_tree(pid, including_parent=True):
@@ -87,19 +86,28 @@ def kill_handler(signum, frame):
 def main():
   parser = argparse.ArgumentParser(description="A statistics collection framework for Riemann. Version {version}".format(version=__VERSION__))
   parser.add_argument('-c', '--config', help='Config file. Defaults /etc/pyriem.conf.', default='/etc/pyriem.conf')
+  parser.add_argument('-d', '--debug', help='Specify plugin and method to run. ie -d load,one_minute')
 
   namespace, sys_args = parser.parse_known_args()
-  config_file = namespace.config if namespace.config else '/etc/pyriem.conf'
 
-  config = yaml.load(file(config_file, 'r'))
-
-  signal.signal(signal.SIGINT, kill_handler)
-  signal.signal(signal.SIGTERM, kill_handler)
-  signal.signal(signal.SIGHUP, kill_handler)
-
-  try:
-    collect(config)
-  except (KeyboardInterrupt, SystemExit):
-    kill_proc_tree(os.getpid())
+  if namespace.debug:
+    module, method = namespace.debug.split(',')
+    module = __import__('{namespace}.plugins.{plugin}'.format(namespace=__PROJECT__, plugin=module), fromlist=[module])
+    results = getattr(module, method)()
+    print results
     sys.exit()
+  else:
+    config_file = namespace.config if namespace.config else '/etc/pyriem.conf'
+
+    config = yaml.load(file(config_file, 'r'))
+
+    signal.signal(signal.SIGINT, kill_handler)
+    signal.signal(signal.SIGTERM, kill_handler)
+    signal.signal(signal.SIGHUP, kill_handler)
+
+    try:
+      collect(config)
+    except (KeyboardInterrupt, SystemExit):
+      kill_proc_tree(os.getpid())
+      sys.exit()
 
