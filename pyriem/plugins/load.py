@@ -14,133 +14,146 @@ except ImportError:
   print "Module 'psutil' required"
 
 
-"""
-Percentage modifiers of total CPU's
-for example if there was 1 CPU then a modifier of 1.5 would indicate a load of 1.5. If there was
-2 CPU's then a modifier of 1.5 would mean a load of 3.0, 3 CPU's a load of 4.5 etc.
+FREQ = 5
 
-Format is [warning, critical] - this can be overridden in the config file with the following format
+WARN_1_MIN = 2.0
+WARN_5_MIN = 1.0
+WARN_15_MIN = 0.8
 
-"""
-default_settings = {
-  'one_minute': {
-    'frequency': 5,
-    'warn': 2.0,
-    'crit': 4.0
-  },
-  'five_minute': {
-    'frequency': 10,
-    'warn': 1.0,
-    'crit': 2.0
-  },
-  'fifteen_minute': {
-    'frequency': 15,
-    'warn': 0.8,
-    'crit': 1.2
-  }
-}
+CRIT_1_MIN = 4.0
+CRIT_5_MIN = 2.0
+CRIT_15_MIN = 1.2
+
+
+def parse_settings_load_avg(settings):
+  """
+  Define the default config so that the yaml file doesn't have to define everything
+  """
+  _settings = {}
+
+  # All possible metrics
+  _settings['freq'] = settings['freq'] if 'freq' in settings else FREQ
+  _settings['1_min'] = {}
+  _settings['5_min'] = {}
+  _settings['15_min'] = {}
+
+  # Warning threashold
+  _settings['1_min']['warn'] = settings['1_min']['warn'] \
+    if '1_min' in settings and 'warn' in settings['1_min'] else WARN_1_MIN
+
+  _settings['5_min']['warn'] = settings['5_min']['warn'] \
+    if '5_min' in settings and 'warn' in settings['5_min'] else WARN_5_MIN
+
+  _settings['15_min']['warn'] = settings['15_min']['warn'] \
+    if '15_min' in settings and 'warn' in settings['15_min'] else WARN_15_MIN
+
+  # Critical threashold
+  _settings['1_min']['crit'] = settings['1_min']['crit'] \
+    if '1_min' in settings and 'crit' in settings['1_min'] else CRIT_1_MIN
+
+  _settings['5_min']['crit'] = settings['5_min']['crit'] \
+    if '5_min' in settings and 'crit' in settings['1_min'] else CRIT_5_MIN
+
+  _settings['15_min']['crit'] = settings['15_min']['crit'] \
+    if '15_min' in settings and 'crit' in settings['15_min'] else CRIT_15_MIN
+
+  # Tags
+  _settings['1_min']['tags'] = settings['1_min']['tags'] + ['load'] \
+    if '1_min' in settings and 'tags' in settings['1_min'] else ['load']
+
+  _settings['5_min']['tags'] = settings['5_min']['tags'] + ['load'] \
+    if '5_min' in settings and 'tags' in settings['5_min'] else ['load']
+
+  _settings['15_min']['tags'] = settings['15_min']['tags'] + ['load'] \
+    if '15_min' in settings and 'tags' in settings['15_min'] else ['load']
+
+  return _settings
+
+
 
 def _get_cpus():
+  """
+  Returns a count of CPU's for this host
+  """
   try:
     return psutil.cpu_count()
   except AttributeError:
     return psutil.NUM_CPUS
 
 
-def one_minute(settings=None):
-  """ Returns the 1 minute load average
+def load_avg(settings):
   """
+  Returns the load average
+  """
+
+
   load = os.getloadavg()
-
-  if not settings:
-    settings = default_settings['one_minute']
-
   cpus = float(_get_cpus())
+  load_data = []
+
+
+  # 1 minute load average
   load_as_percentage = load[0]/cpus
 
   state = 'ok'
-  if load_as_percentage >= settings['warn']:
+  if load_as_percentage >= settings['1_min']['warn']:
     state = 'warning'
-  if load_as_percentage >= settings['crit']:
+  if load_as_percentage >= settings['1_min']['crit']:
     state = 'critical'
 
-  data = {
+  data_1 = {
     'host': os.uname()[1],
-    'service': 'load_1_minute',
+    'service': 'load_avg.1_min',
     'metric': load[0],
     'state': state,
     'time': int(time.time()),
-    'tags': [__name__],
-    'description': 'One minute load average in "{state}" state'.format(state=state)
+    'tags': settings['1_min']['tags']
   }
 
-  if 'ttl' in settings:
-    data['ttl'] = settings['ttl']
-
-  return data
+  load_data.append(data_1)
 
 
-def five_minute(settings=None):
-  """ Returns the 5 minute load average
-  """
-  load = os.getloadavg()
 
-  if not settings:
-    settings = default_settings['five_minute']
-
-  cpus = float(_get_cpus())
+  # 5 minute load average
   load_as_percentage = load[1]/cpus
 
   state = 'ok'
-  if load_as_percentage >= settings['warn']:
+  if load_as_percentage >= settings['5_min']['warn']:
     state = 'warning'
-  if load_as_percentage >= settings['crit']:
+  if load_as_percentage >= settings['5_min']['crit']:
     state = 'critical'
 
-  data = {
+  data_5 = {
     'host': os.uname()[1],
-    'service': 'load_5_minute',
+    'service': 'load_avg.5_min',
     'metric': load[1],
     'state': state,
     'time': int(time.time()),
-    'tags': [__name__],
-    'description': 'Five minute load average in "{state}" state'.format(state=state)
+    'tags': settings['5_min']['tags'],
   }
 
-  if 'ttl' in settings:
-    data['ttl'] = settings['ttl']
-
-  return data
+  load_data.append(data_5)
 
 
-def fifteen_minute(settings=None):
-  """ Returns the 15 minute load average
-  """
-  load = os.getloadavg()
 
-  if not settings:
-    settings = default_settings['fifteen_minute']
-
-  cpus = float(_get_cpus())
+  # 15 minute load average
   load_as_percentage = load[2]/cpus
 
   state = 'ok'
-  if load_as_percentage >= settings['warn']:
+  if load_as_percentage >= settings['15_min']['warn']:
     state = 'warning'
-  if load_as_percentage >= settings['crit']:
+  if load_as_percentage >= settings['15_min']['crit']:
     state = 'critical'
 
-  data = {
+  data_15 = {
     'host': os.uname()[1],
-    'service': 'load_15_minute',
+    'service': 'load_avg.15_min',
     'metric': load[2],
     'state': state,
     'time': int(time.time()),
-    'tags': [__name__],
-    'description': 'Fifteen minute load average in "{state}" state'.format(state=state)
+    'tags': settings['15_min']['tags']
   }
 
-  if 'ttl' in settings:
-    data['ttl'] = settings['ttl']
+  load_data.append(data_15)
 
-  return data
+  return load_data
