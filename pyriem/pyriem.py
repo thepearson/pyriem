@@ -9,10 +9,11 @@ import sys
 import os
 
 __PROJECT__ = 'pyriem'
-__VERSION__ = "0.1.17"
+__VERSION__ = "0.1.18"
 
 c = None
 
+print_only = False
 
 class TimedProcess(multiprocessing.Process):
   def __init__(self, interval, module, method, config, settings=None):
@@ -39,38 +40,42 @@ def collect(config):
   for plugin, methods in plugins.iteritems():
     module = __import__('{namespace}.plugins.{plugin}'.format(namespace=__PROJECT__, plugin=plugin), fromlist=[plugin])
     for method in methods:
-      try:
-        method_frequency = config['{plugin}'.format(plugin=plugin)]['{method}'.format(method=method)]['frequency']
-      except:
-        method_frequency = default_freq
+      # Get module specific settings
+      settings = getattr(module, 'parse_settings_{method}'.format(method=method))(config['{plugin}'.format(plugin=plugin)]['{method}'.format(method=method)])
 
-      timed_process = TimedProcess(method_frequency, module, method, config, config['{plugin}'.format(plugin=plugin)]['{method}'.format(method=method)])
+      method_frequency = settings['freq']
+
+      timed_process = TimedProcess(method_frequency, module, method, config['default'], settings)
       timed_process.start()
 
-
-#
-# def execute(module, method, config, settings=None):
-#   results = getattr(module, method)(settings)
-#   return send(config, module, method, results)
 
 def send(config, module, method, data):
   global c
   if not c:
-    if config['default']['transport'] == 'udp':
-      c = bernhard.Client(host=config['default']['host'], transport=bernhard.UDPTransport)
+    if config['transport'] == 'udp':
+      c = bernhard.Client(host=config['host'], transport=bernhard.UDPTransport)
     else:
-      c = bernhard.Client(host=config['default']['host'])
+      c = bernhard.Client(host=config['host'])
 
-  if type(data) is list:
-    for item in data:
-      c.send(item)
-  else:
-    c.send(data)
+  try:
+    if type(data) is list:
+      for item in data:
+        if print_only:
+          print item
+        else:
+          c.send(item)
+    else:
+        if print_only:
+          print data
+        else:
+          c.send(data)
+
+  except bernhard.TransportError:
+    print "Could not reach server"
 
 
 def kill_proc_tree(pid, including_parent=True):
   parent = psutil.Process(pid)
-  print parent.children()
   for child in parent.children(recursive=True):
     child.kill()
   if including_parent:
@@ -87,6 +92,7 @@ def main():
   parser = argparse.ArgumentParser(description="A statistics collection framework for Riemann. Version {version}".format(version=__VERSION__))
   parser.add_argument('-c', '--config', help='Config file. Defaults /etc/pyriem.conf.', default='/etc/pyriem.conf')
   parser.add_argument('-d', '--debug', help='Specify plugin and method to run. ie -d load,one_minute')
+  parser.add_argument('-p', '--printonly', help='Run as normal, however only print output, do not send', action="store_true")
 
   namespace, sys_args = parser.parse_known_args()
 
@@ -97,6 +103,11 @@ def main():
     print results
     sys.exit()
   else:
+
+    if namespace.printonly:
+      global print_only
+      print_only = True
+
     config_file = namespace.config if namespace.config else '/etc/pyriem.conf'
 
     config = yaml.load(file(config_file, 'r'))
