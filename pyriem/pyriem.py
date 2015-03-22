@@ -12,6 +12,7 @@ __PROJECT__ = 'pyriem'
 __VERSION__ = "0.1.18"
 
 c = None
+DEFAULT_FREQ = 60
 
 print_only = False
 
@@ -35,7 +36,7 @@ class TimedProcess(multiprocessing.Process):
 def collect(config):
     global running_procs
     plugins = config['enabled plugins']
-    default_freq = config['default']['frequency']
+    default_freq = DEFAULT_FREQ
 
     # Main loop
     for plugin, methods in plugins.iteritems():
@@ -43,10 +44,10 @@ def collect(config):
                             fromlist=[plugin])
         for method in methods:
             # Get module specific settings
-            settings = getattr(module, 'parse_settings_{method}'.format(method=method))(
-                config['{plugin}'.format(plugin=plugin)]['{method}'.format(method=method)])
+            settings = config['{plugin}'.format(plugin=plugin)]['{method}'.format(method=method)]
 
-            method_frequency = settings['freq']
+            method_frequency = config.get('{plugin}'.format(plugin=plugin), {}).get('{method}'.format(method=method), {}).get('freq', module._settings.get('{method}'.format(method=method), {}).get('freq', DEFAULT_FREQ))
+            settings['freq'] = method_frequency
 
             timed_process = TimedProcess(method_frequency, module, method, config['default'], settings)
             timed_process.start()
