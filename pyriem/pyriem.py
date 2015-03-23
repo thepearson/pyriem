@@ -9,10 +9,10 @@ import sys
 import os
 
 __PROJECT__ = 'pyriem'
-__VERSION__ = "0.1.18"
+__VERSION__ = "0.1.20"
 
 c = None
-DEFAULT_FREQ = 60
+DEFAULT_FREQ = 5
 
 print_only = False
 
@@ -44,7 +44,7 @@ def collect(config):
                             fromlist=[plugin])
         for method in methods:
             # Get module specific settings
-            settings = config['{plugin}'.format(plugin=plugin)]['{method}'.format(method=method)]
+            settings = config.get('{plugin}'.format(plugin=plugin), {}).get('{method}'.format(method=method), module._settings.get('{method}'.format(method=method), {}))
 
             method_frequency = config.get('{plugin}'.format(plugin=plugin), {}).get('{method}'.format(method=method), {}).get('freq', module._settings.get('{method}'.format(method=method), {}).get('freq', DEFAULT_FREQ))
             settings['freq'] = method_frequency
