@@ -45,14 +45,14 @@ cached_data = {}
 def stats(settings=None):
     global cached_data
 
-    varnish_stats = []
+    return_varnish_stats = []
 
     default_settings = _settings['stats']
     varnish_stats = check_output(['varnishstat', '-1', '-f', ','.join(default_settings.keys())])
 
     for stat in varnish_stats.split('\n')[:-1]:
         # Just get the first two values
-        metric_name, metric = stat.split()[0:2]
+        metric_name, metric = stat.split()[0], int(stat.split()[1])
         
         do_run = True
         if '{metric_name}'.format(metric_name=metric_name) not in cached_data:
@@ -76,6 +76,6 @@ def stats(settings=None):
         }
 
         if do_run:
-            varnish_stats.append(data)
+            return_varnish_stats.append(data)
 
-    return varnish_stats
+    return return_varnish_stats
