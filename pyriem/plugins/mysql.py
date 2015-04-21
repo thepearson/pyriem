@@ -50,8 +50,6 @@ cached_data = {}
 def status(settings=None):
     global cached_data
 
-    return_varnish_stats = []
-
     default_settings = _settings['status']
 
     data_rows = []

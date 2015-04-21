@@ -9,7 +9,7 @@ import sys
 import os
 
 __PROJECT__ = 'pyriem'
-__VERSION__ = "0.1.20"
+__VERSION__ = "0.1.22"
 
 c = None
 DEFAULT_FREQ = 5
