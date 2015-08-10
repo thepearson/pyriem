@@ -9,7 +9,7 @@ import sys
 import os
 
 __PROJECT__ = 'pyriem'
-__VERSION__ = "0.1.22"
+__VERSION__ = "0.1.28"
 
 c = None
 DEFAULT_FREQ = 5
@@ -29,7 +29,8 @@ class TimedProcess(multiprocessing.Process):
     def run(self):
         while True:
             results = getattr(self.module, self.method)(self.settings)
-            send(self.config, self.module, self.method, results)
+            if results:
+                send(self.config, self.module, self.method, results)
             time.sleep(self.interval)
 
 

@@ -95,7 +95,7 @@ def disk_io(settings=None):
         if device not in disks:
             continue
 
-        for metric_name, metric in info.__dict__.iteritems():
+        for metric_name, metric in info._asdict().iteritems():
 
             do_run = True
 
@@ -152,7 +152,7 @@ def disk_usage(settings=None):
 
     for disk in disks:
         space = psutil.disk_usage(disk.mountpoint)
-        for metric_name, metric in space.__dict__.iteritems():
+        for metric_name, metric in space._asdict().iteritems():
 
             data = {
                 'host': os.uname()[1],

@@ -22,15 +22,15 @@ DEFAULT_TAGS = ['apache2']
 _settings = {
     'url': 'http://localhost/server-status?auto',
     'status': {
-        'Uptime': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
-        'IdleWorkers': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
-        'TotalAccesses': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
-        'TotalkBytes': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
-        'BytesPerReq': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
-        'CPULoad': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
-        'BytesPerSec': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
-        'ReqPerSec': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
-        'BusyWorkers': {'persec': False, 'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS}
+        'Uptime': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
+        'IdleWorkers': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
+        'TotalAccesses': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
+        'TotalkBytes': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
+        'BytesPerReq': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
+        'CPULoad': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
+        'BytesPerSec': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
+        'ReqPerSec': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS},
+        'BusyWorkers': {'warn': None,'crit': None,'trigger': None,'tags': DEFAULT_TAGS}
     }
 }
 
@@ -50,7 +50,11 @@ def status(settings=None):
 
     return_apache_stats = []
     default_settings = _settings['status']
-    apache_status = _get_status(_settings['url'])
+
+    try:
+        apache_status = _get_status(_settings['url'])
+    except:
+        return None
 
     for key,row in apache_status.iteritems():
         metric_name = key

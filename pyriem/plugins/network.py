@@ -44,7 +44,7 @@ def network_io(settings=None):
     net_io = psutil.net_io_counters(pernic=True)
 
     for device, vals in net_io.iteritems():
-        for metric_name, metric in vals.__dict__.iteritems():
+        for metric_name, metric in vals._asdict().iteritems():
             do_run = True
             if '{metric_name}.{dev}'.format(metric_name=metric_name, dev=device) not in cached_data:
                 current_metric = 0

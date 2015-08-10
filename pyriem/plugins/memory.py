@@ -42,6 +42,7 @@ _settings = {
     }
 }
 
+cached_data = {}
 
 def virtual_memory(settings):
     """
@@ -53,7 +54,7 @@ def virtual_memory(settings):
     return_data = []
 
     try:
-        for item in virtual_memory.__dict__.iteritems():
+        for item in virtual_memory._asdict().iteritems():
             metric_name = item[0]
             metric = item[1]
 
@@ -76,6 +77,8 @@ def virtual_memory(settings):
 
             metric_name = key
             metric = virtual_memory.__getattribute__(item)
+
+            cached_data['{metric_name}.{dev}'.format(metric_name=metric_name, dev=device)] = metric
 
             data = {
                 'host': os.uname()[1],
@@ -106,7 +109,7 @@ def swap_memory(settings):
     return_data = []
 
     try:
-        for item in swap_memory.__dict__.iteritems():
+        for item in swap_memory._asdict().iteritems():
             metric_name = item[0]
             metric = item[1]
 

@@ -1,7 +1,7 @@
 ---
 # file: stats config
 default:
-  transport: udp # udp or tcp
+  transport: tcp # udp or tcp, tcp is so far performant enough
   host: riemann.example.com
   frequency: 10
 
@@ -17,7 +17,10 @@ enabled plugins:
   memory:
     - virtual_memory
     - swap_memory
-
+  mysql:
+    - status
+  apache2:
+    - status
 
 # Specific settings
 # module:
@@ -31,4 +34,34 @@ enabled plugins:
 #         - aditional
 #         - tags
 
+load:
+  load_avg:
+    freq: 5
+    1_min:
+      warn: 5.0
+      crit: 8.0
+    5_min:
+      warn: 4.0
+      crit: 5.0
+    15_min:
+      warn: 3.5
+      crit: 4.0
+
+memory:
+  virtual_memory:
+    freq: 30
+    percent:
+      warn: 90
+      crit: 95
+  swap_memory:
+    freq: 30
+    percent:
+      warn: 25
+      crit: 50
+
+disk:
+  disk_usage:
+    percent:
+      warn: 75
+      crit: 90
 
