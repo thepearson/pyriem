@@ -17,10 +17,6 @@ enabled plugins:
   memory:
     - virtual_memory
     - swap_memory
-  mysql:
-    - status
-  apache2:
-    - status
 
 # Specific settings
 # module:
